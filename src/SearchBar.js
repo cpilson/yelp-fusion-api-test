@@ -1,15 +1,19 @@
 import axios from "axios";
-import React, {Component} from "react";
-import {ToastContainer, toast} from "react-toastify";
+import React, { Component } from "react";
+import { ToastContainer, toast } from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
 require("dotenv").config();
+
+// Limit our Yelp results returned:
+const YELP_RESULT_LIMIT = 50;
 
 //Bring our Yelp API v3 (Fusion) key in from the .env file:
 const YELP_API_key = process.env.REACT_APP_YELP_API_key;
 // Configure axios headers to use our Yelp API key:
 axios.defaults.headers.common["Authorization"] = `Bearer ${YELP_API_key}`;
-axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
+axios.defaults.headers.post["Content-Type"] =
+  "application/x-www-form-urlencoded";
 
 // Bring in our CORS-anywhere URL, default https://cors-anywhere.herokuapp.com/
 const CORS_ANYWHERE_URL = "https://shrouded-basin-35216.herokuapp.com/";
@@ -27,42 +31,39 @@ class SearchBar extends Component {
       yelpResults: null
     };
     // This binding is necessary to make `this` work in the callback
-    this.errorHandler = this
-      .errorHandler
-      .bind(this);
-    this.getYelpData = this
-      .getYelpData
-      .bind(this);
-    this.handleSubmit = this
-      .handleSubmit
-      .bind(this);
-    this.handleYelpDataPullMethodChange = this
-      .handleYelpDataPullMethodChange
-      .bind(this);
+    this.errorHandler = this.errorHandler.bind(this);
+    this.getYelpData = this.getYelpData.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleYelpDataPullMethodChange = this.handleYelpDataPullMethodChange.bind(
+      this
+    );
   }
 
   // toast setup:
   toastId = null;
   toastNotify = message => toast(message);
 
-  toastUpdate = () => toast.update(this.toastId, {
-    type: toast.TYPE.ERROR,
-    autoClose: 5000
-  });
+  toastUpdate = () =>
+    toast.update(this.toastId, {
+      type: toast.TYPE.ERROR,
+      autoClose: 5000
+    });
 
   toastDismiss = () => {
     toast.dismiss(this.toastId);
-    this.setState({isError: false});
-  }
+    this.setState({ isError: false });
+  };
 
   dismissAll = () => toast.dismiss();
 
   errorHandler = (error, verbose = false) => {
-    this.setState({isLoading: false});
+    this.setState({ isLoading: false });
     this.toastUpdate(this.toastNotify(error.message));
-    this.setState({isError: false});
+    this.setState({ isError: false });
     if (!verbose === false) {
-      console.log(`error: ${error.message}; state: ${JSON.stringify(this.state)}`);
+      console.log(
+        `error: ${error.message}; state: ${JSON.stringify(this.state)}`
+      );
     }
   };
 
@@ -70,9 +71,11 @@ class SearchBar extends Component {
     // get our Yelp data payload...
     if (this.state.latitude === 0 || this.state.longitude === 0) {
       console.log("ERROR: GPS/LOCATION ISSUE.");
-      this.errorHandler({message: "GPS/Location issue."});
+      this.errorHandler({ message: "GPS/Location issue." });
     } else {
-      const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${this.state.searchText}&latitude=${latitude}&longitude=${longitude}&limit=${ 25}`;
+      const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${
+        this.state.searchText
+      }&latitude=${latitude}&longitude=${longitude}&limit=${YELP_RESULT_LIMIT}`;
       switch (this.state.selectedYelpDataPullMethod) {
         case "rest":
           // Fetch Yelp data via Axios/REST
@@ -100,9 +103,9 @@ class SearchBar extends Component {
           axios
             .get(`${yelpQueryString}`)
             .then(response => {
-              this.setState({yelpResults: response.data});
+              this.setState({ yelpResults: response.data });
               // We're done working; let's drop the isLoading flag:
-              this.setState({isLoading: false});
+              this.setState({ isLoading: false });
             })
             .catch(error => {
               this.errorHandler(error, true);
@@ -137,14 +140,16 @@ class SearchBar extends Component {
           // => {   console.log(json); }).catch(error => {   this.errorHandler(error,
           // true); });
 
-          this.errorHandler({message: `Using CORS-Anywhere URL of ${CORS_ANYWHERE_URL}`});
+          this.errorHandler({
+            message: `Using CORS-Anywhere URL of ${CORS_ANYWHERE_URL}`
+          });
 
           axios
             .get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
             .then(response => {
-              this.setState({yelpResults: response.data});
+              this.setState({ yelpResults: response.data });
               // We're done working; let's drop the isLoading flag:
-              this.setState({isLoading: false});
+              this.setState({ isLoading: false });
             })
             .catch(error => {
               this.errorHandler(error, true);
@@ -154,42 +159,51 @@ class SearchBar extends Component {
           break;
         default:
           console.log("  In default case.");
-          this.setState({yelpResults: null});
+          this.setState({ yelpResults: null });
       }
     }
   };
 
   handleSearchTextChange = event => {
-    this.setState({searchText: event.target.value});
+    this.setState({ searchText: event.target.value });
   };
 
   handleSubmit = event => {
     event.preventDefault();
-    this.setState({yelpResults: null});
-    this.setState({isLoading: true});
+    this.setState({ yelpResults: null });
+    this.setState({ isLoading: true });
     // Clear any errors we may have had from a previous attempt:
-    this.setState({isError: false});
-    navigator
-      .geolocation
-      .getCurrentPosition(position => {
-        this.setState({latitude: position.coords.latitude, longitude: position.coords.longitude});
-        console.log(`=======> FOUND POSITION: ${JSON.stringify(this.state.latitude)}, ${JSON.stringify(this.state.longitude)}`);
+    this.setState({ isError: false });
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.setState({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        console.log(
+          `=======> FOUND POSITION: ${JSON.stringify(
+            this.state.latitude
+          )}, ${JSON.stringify(this.state.longitude)}`
+        );
         console.log(`STATE: ${JSON.stringify(this.state)}`);
         //this.errorHandler({message: "Hi!"});
         this.getYelpData(this.state.latitude, this.state.longitude);
-      }, error => {
-        this.errorHandler({message: `${error.message}`});
-        this.setState({latitude: 33.5547386, longitude: -111.8880115});
+      },
+      error => {
+        this.errorHandler({ message: `${error.message}` });
+        this.setState({ latitude: 33.5547386, longitude: -111.8880115 });
         this.getYelpData(this.state.latitude, this.state.longitude);
-      }, {
+      },
+      {
         enableHighAccuracy: true,
         timeout: 5000,
         maximumAge: 1000
-      });
+      }
+    );
   };
 
   handleYelpDataPullMethodChange = event => {
-    this.setState({selectedYelpDataPullMethod: event.target.value});
+    this.setState({ selectedYelpDataPullMethod: event.target.value });
   };
 
   render() {
@@ -202,7 +216,8 @@ class SearchBar extends Component {
                 <label>
                   <select
                     onChange={this.handleYelpDataPullMethodChange}
-                    value={this.state.selectedYelpDataPullMethod}>
+                    value={this.state.selectedYelpDataPullMethod}
+                  >
                     <option value="rest">Axios</option>
                     <option value="corsanywhere">Axios/CORS-anywhere</option>
                   </select>
@@ -213,11 +228,17 @@ class SearchBar extends Component {
                   name="searchText"
                   onChange={this.handleSearchTextChange}
                   placeholder="Search Yelp for..."
-                  value={this.state.searchText}/>
+                  value={this.state.searchText}
+                />
                 <input
-                  disabled={this.state.searchText.length === 0 || this.state.isLoading || this.state.error}
+                  disabled={
+                    this.state.searchText.length === 0 ||
+                    this.state.isLoading ||
+                    this.state.error
+                  }
                   type="submit"
-                  value="Submit"/>
+                  value="Submit"
+                />
               </div>
             </form>
           </div>
@@ -226,9 +247,10 @@ class SearchBar extends Component {
           <SearchResults
             isError={this.state.isError}
             isLoading={this.state.isLoading}
-            yelpResults={this.state.yelpResults}/>
+            yelpResults={this.state.yelpResults}
+          />
         </div>
-        <ToastContainer/>
+        <ToastContainer />
       </div>
     );
   }
