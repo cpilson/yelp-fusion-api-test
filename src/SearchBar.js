@@ -27,7 +27,7 @@ class SearchBar extends Component {
       latitude: 0,
       longitude: 0,
       searchText: "",
-      selectedYelpDataPullMethod: "rest",
+      selectedYelpDataPullMethod: "raw-axios",
       yelpResults: null
     };
     // This binding is necessary to make `this` work in the callback
@@ -73,13 +73,19 @@ class SearchBar extends Component {
       console.log("ERROR: GPS/LOCATION ISSUE.");
       this.errorHandler({ message: "GPS/Location issue." });
     } else {
-      const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${
+      // const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${
+      //   this.state.searchText
+      // }&latitude=${latitude}&longitude=${longitude}&limit=${YELP_RESULT_LIMIT}`;
+      const yelpQueryString = `${
+        YELP_URI.API_YELP_SEARCH
+      }term=${"music"}&location=${encodeURI(
         this.state.searchText
-      }&latitude=${latitude}&longitude=${longitude}&limit=${YELP_RESULT_LIMIT}`;
+      )}&limit=${YELP_RESULT_LIMIT}`;
+
       switch (this.state.selectedYelpDataPullMethod) {
-        case "rest":
-          // Fetch Yelp data via Axios/REST
-          console.warn("     In rest");
+        case "raw-axios":
+          // Fetch Yelp data via a raw Axios call
+          console.warn("     In raw-axios");
           /*
           yelp_client
             .search({term: this.state.searchText, latitude: this.state.latitude, longitude: this.state.longitude, limit: 25})
@@ -166,6 +172,9 @@ class SearchBar extends Component {
 
   handleSearchTextChange = event => {
     this.setState({ searchText: event.target.value });
+    if (event.target.value.length === 0) {
+      this.setState({ yelpResults: null });
+    }
   };
 
   handleSubmit = event => {
@@ -218,7 +227,7 @@ class SearchBar extends Component {
                     onChange={this.handleYelpDataPullMethodChange}
                     value={this.state.selectedYelpDataPullMethod}
                   >
-                    <option value="rest">Axios</option>
+                    <option value="raw-axios">Axios</option>
                     <option value="corsanywhere">Axios/CORS-anywhere</option>
                   </select>
                 </label>
@@ -227,7 +236,7 @@ class SearchBar extends Component {
                   autoFocus
                   name="searchText"
                   onChange={this.handleSearchTextChange}
-                  placeholder="Search Yelp for..."
+                  placeholder="Search Yelp for music in..."
                   value={this.state.searchText}
                 />
                 <input
