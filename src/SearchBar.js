@@ -3,9 +3,11 @@ import React, {Component} from "react";
 import {ToastContainer, toast} from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
+require('dotenv').config();
 
 // Bring our Yelp API v3 (Fusion) key in from the .env file:
 const YELP_API_key = process.env.YELP_API_key;
+console.warn(`YELP KEY: ${YELP_API_key}`);
 // Configure axios headers to use our Yelp API key:
 axios.defaults.headers.common["Authorization"] = `Bearer ${YELP_API_key}`;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
@@ -96,17 +98,16 @@ class SearchBar extends Component {
             });
           */
 
-          axios
-          //.get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
-            .get(yelpQueryString)
+          axios.get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
+          // .get(yelpQueryString)
             .then(response => {
-              this.setState({yelpResults: response.data});
-              // We're done working; let's drop the isLoading flag:
-              this.setState({isLoading: false});
-            })
-            .catch(error => {
-              this.errorHandler(error, true);
-            });
+            this.setState({yelpResults: response.data});
+            // We're done working; let's drop the isLoading flag:
+            this.setState({isLoading: false});
+          }).catch(error => {
+            this.errorHandler(error, true);
+            console.warn(`     ERROR: ${JSON.stringify(error)}`);
+          });
 
           /*
           Under Axios, I received this error:
