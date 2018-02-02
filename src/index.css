@@ -3,3 +3,68 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.business {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2em;
+  list-style-type: none;
+  padding: 0;
+  width: 75%;
+}
+
+.business li {
+  cursor: pointer;
+  position: relative;
+  left: 0;
+  background-color: #eee;
+  margin-right: auto;
+  margin-left: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-top: 0.3em;
+  padding-left: 0.5em;
+  padding-right: 0em;
+  height: 2em;
+  text-align: left;
+  border-radius: 4px;
+}
+
+.business li.selected:hover {
+  background-color: #bbd8dc !important;
+  color: white;
+}
+
+.business li:hover {
+  color: #607d8b;
+  background-color: #ddd;
+  left: 0.1em;
+}
+
+.business .text {
+  position: relative;
+  text-align: left;
+}
+
+.business .badge {
+  font-size: small;
+  color: white;
+  padding: 0em 0.7em 0em 0em;
+  background-color: #607d8b;
+  position: left;
+  height: 2.8em;
+  margin-left: 0.8em;
+  margin-right: 0em;
+  margin-top: -0.4em;
+  margin-bottom: 0em;
+  border-radius: 4px 4px 4px 4px;
+  float: right;
+  width: 7em;
+  text-align: right;
+}
+
+.business .badge .text {
+  padding-left: 1em;
+  padding-right: 0;
+  text-align: right;
+}

@@ -19,7 +19,32 @@ const SearchResults = props => {
       </div>
     );
   } else {
-    return yelpResults;
+    const myResultByDistance = _.orderBy(yelpResults.businesses, ["distance"], ["asc"]);
+    let distObject = {};
+    distObject.businesses = myResultByDistance;
+
+    // return yelpResults;
+    return (
+      <div>
+        <ul className="business">
+          {distObject
+            .businesses
+            .map(b => (
+              <li className="business" key={b.id}>
+                <div className="text">{b.name}
+                  <span className="badge">
+                    <div className="text">{b.distance > 1320
+                        ? `${ (b.distance / 5280).toFixed(2)} miles`
+                        : `${b
+                          .distance
+                          .toFixed(2)} feet`}</div>
+                  </span>
+                </div>
+              </li>
+            ))}
+        </ul>
+      </div>
+    );
   }
 };
 

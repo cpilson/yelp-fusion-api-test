@@ -3,10 +3,10 @@ import React, {Component} from "react";
 import {ToastContainer, toast} from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
-// require('dotenv').config(); Bring our Yelp API v3 (Fusion) key in from the
-// .env file:
-const YELP_API_key = process.env.YELP_API_key;
-console.warn(`YELP KEY: ${YELP_API_key}`);
+require("dotenv").config();
+
+//Bring our Yelp API v3 (Fusion) key in from the .env file:
+const YELP_API_key = process.env.REACT_APP_YELP_API_key;
 // Configure axios headers to use our Yelp API key:
 axios.defaults.headers.common["Authorization"] = `Bearer ${YELP_API_key}`;
 axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
@@ -58,7 +58,6 @@ class SearchBar extends Component {
   dismissAll = () => toast.dismiss();
 
   errorHandler = (error, verbose = false) => {
-    console.warn("We've got an error here...");
     this.setState({isLoading: false});
     this.toastUpdate(this.toastNotify(error.message));
     this.setState({isError: false});
@@ -77,6 +76,7 @@ class SearchBar extends Component {
       switch (this.state.selectedYelpDataPullMethod) {
         case "rest":
           // Fetch Yelp data via Axios/REST
+          console.warn("     In rest");
           /*
           yelp_client
             .search({term: this.state.searchText, latitude: this.state.latitude, longitude: this.state.longitude, limit: 25})
@@ -96,17 +96,18 @@ class SearchBar extends Component {
               console.log(e);
             });
           */
-
-          axios.get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
-          // .get(yelpQueryString)
+          // console.log(`YELP KEY: ${YELP_API_key}`);
+          axios
+            .get(`${yelpQueryString}`)
             .then(response => {
-            this.setState({yelpResults: response.data});
-            // We're done working; let's drop the isLoading flag:
-            this.setState({isLoading: false});
-          }).catch(error => {
-            this.errorHandler(error, true);
-            console.warn(`     ERROR: ${JSON.stringify(error)}`);
-          });
+              this.setState({yelpResults: response.data});
+              // We're done working; let's drop the isLoading flag:
+              this.setState({isLoading: false});
+            })
+            .catch(error => {
+              this.errorHandler(error, true);
+              console.warn(`     ERROR: ${JSON.stringify(error)}`);
+            });
 
           /*
           Under Axios, I received this error:
@@ -117,24 +118,6 @@ class SearchBar extends Component {
           or
             https://stackoverflow.com/questions/45424182/cant-seem-to-fetch-data-from-the-yelp-api-in-react-app
             */
-          break;
-        case "request":
-          // Fetch Yelp data via request
-          console.log("     In request");
-          var request = require('request');
-          var options = {
-            url: `${CORS_ANYWHERE_URL}${yelpQueryString}`,
-            headers: {
-              "Authorization": "Bearer " + YELP_API_key,
-              "Origin": "Chris"
-            }
-          };
-
-          request(options, function (error, response, body) {
-            console.log('error:', error); // Print the error if one occurred
-            console.log('statusCode:', response && response.statusCode);
-            console.log('body:', body);
-          });
           break;
         case "corsanywhere":
           // Fetch Yelp data via CORS anywhere See
@@ -148,17 +131,25 @@ class SearchBar extends Component {
           // fetch("https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses
           // /search?ca" +     "tegories=bars&limit=50&location=New York", {headers:
           // myHeaders}).then((res) => {   return res.json(); }).then((json) => {
-          // console.log(json); });
+          // console.log(json); }); fetch(`${CORS_ANYWHERE_URL}${yelpQueryString}`,
+          // {headers: myHeaders}).then((response) => {   console.log(`RESPONSE:
+          // ${JSON.stringify(response.json)}`);   return response.json(); }).then((json)
+          // => {   console.log(json); }).catch(error => {   this.errorHandler(error,
+          // true); });
 
-          fetch(`${CORS_ANYWHERE_URL}${yelpQueryString}`, {headers: myHeaders}).then((response) => {
-            console.log(`RESPONSE:
-          ${JSON.stringify(response.json)}`);
-            return response.json();
-          }).then((json) => {
-            console.log(json);
-          }).catch(error => {
-            this.errorHandler(error, true);
-          });
+          this.errorHandler({message: `Using CORS-Anywhere URL of ${CORS_ANYWHERE_URL}`});
+
+          axios
+            .get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
+            .then(response => {
+              this.setState({yelpResults: response.data});
+              // We're done working; let's drop the isLoading flag:
+              this.setState({isLoading: false});
+            })
+            .catch(error => {
+              this.errorHandler(error, true);
+              console.warn(`     ERROR: ${JSON.stringify(error)}`);
+            });
 
           break;
         default:
@@ -174,7 +165,7 @@ class SearchBar extends Component {
 
   handleSubmit = event => {
     event.preventDefault();
-    // requestLocationPermission();
+    this.setState({yelpResults: null});
     this.setState({isLoading: true});
     // Clear any errors we may have had from a previous attempt:
     this.setState({isError: false});
@@ -212,9 +203,8 @@ class SearchBar extends Component {
                   <select
                     onChange={this.handleYelpDataPullMethodChange}
                     value={this.state.selectedYelpDataPullMethod}>
-                    <option value="rest">Axios/REST</option>
-                    <option value="request">Request</option>
-                    <option value="corsanywhere">CORS-anywhere</option>
+                    <option value="rest">Axios</option>
+                    <option value="corsanywhere">Axios/CORS-anywhere</option>
                   </select>
                 </label>
                 <input
