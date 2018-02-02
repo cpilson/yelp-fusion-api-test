@@ -3,9 +3,8 @@ import React, {Component} from "react";
 import {ToastContainer, toast} from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
-require('dotenv').config();
-
-// Bring our Yelp API v3 (Fusion) key in from the .env file:
+// require('dotenv').config(); Bring our Yelp API v3 (Fusion) key in from the
+// .env file:
 const YELP_API_key = process.env.YELP_API_key;
 console.warn(`YELP KEY: ${YELP_API_key}`);
 // Configure axios headers to use our Yelp API key:
