@@ -16,9 +16,9 @@ Origin 'http://localhost:3000' is therefore not allowed access. The response had
 
 To use this repo to demonstrate the Yelp API issue, and demonstrate a work-around:
 
-* [Build the local client](#buildtheclientlocally)
-* [Build the CORS-Anywhere helper](#buildandpushacors-anywherehelperservicetoheroku)
-* [Configure your `.env` file to point at your CORS-Anywhere helper instance](#configurelocalinstancewithyourcors-anywhereherokuinstance)
+* [Build the local client](#build-the-client-locally)
+* [Build the CORS-Anywhere helper](#build-and-push-a-cors-anywhere-helper-service-to-heroku)
+* [Configure your `.env` file to point at your CORS-Anywhere helper instance](#configure-local-instance-with-your-cors-anywhere-heroku-instance)
 * Run locally with `yarn start`. This should open your default web browser to `http://localhost:3000`.
 
 ### Build the Client Locally
