@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
 // Check for development vs. production process:
-if (!process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "development") {
   require("dotenv").config();
 }
 
