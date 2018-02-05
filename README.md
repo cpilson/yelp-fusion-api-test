@@ -57,6 +57,8 @@ In your `.env` file, replace the default value for `REACT_APP_CORS_ANYWHERE_URL`
     heroku config:set REACT_APP_YELP_API_key="<value from your .env file>" REACT_APP_CORS_ANYWHERE_URL="<value from your .env file>"
     ```
 
+    Do not forget to also add `heroku config:set NODE_ENV=production` to tell Heroku that you want a _production_ build of the app, rather than a _development_ build!
+
     * You can also edit config vars on your app’s settings tab on your Heroku Dashboard, at `https://dashboard.heroku.com/apps/YOUR-APP-NAME/settings`.
 
 * Visit https://dashboard.heroku.com/apps to see a list of _your_ applications deployed on Heroku.
