@@ -3,7 +3,10 @@ import React, { Component } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import * as YELP_URI from "./constants";
 import SearchResults from "./SearchResults";
-require("dotenv").config();
+// Check for development vs. production process:
+if (!process.env.NODE_ENV === "production") {
+  require("dotenv").config();
+}
 
 // Limit our Yelp results returned:
 const YELP_RESULT_LIMIT = 50;
@@ -16,7 +19,9 @@ axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 
 // Bring in our CORS-anywhere URL, default https://cors-anywhere.herokuapp.com/
-const CORS_ANYWHERE_URL = "https://shrouded-basin-35216.herokuapp.com/";
+// I would encourage you to deploy your own build of CORS-anywhere to Heroku
+// for testing. See README.MD for details.
+const CORS_ANYWHERE_URL = process.env.REACT_APP_CORS_ANYWHERE_URL;
 
 class SearchBar extends Component {
   constructor(props) {
@@ -30,7 +35,7 @@ class SearchBar extends Component {
       selectedYelpDataPullMethod: "raw-axios",
       yelpResults: null
     };
-    // This binding is necessary to make `this` work in the callback
+    // This binding is necessary to make `this` work in the callback under React.
     this.errorHandler = this.errorHandler.bind(this);
     this.getYelpData = this.getYelpData.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -46,7 +51,7 @@ class SearchBar extends Component {
   toastUpdate = () =>
     toast.update(this.toastId, {
       type: toast.TYPE.ERROR,
-      autoClose: 5000
+      autoClose: 3000 // Close after 3 seconds.
     });
 
   toastDismiss = () => {
@@ -73,39 +78,22 @@ class SearchBar extends Component {
       console.log("ERROR: GPS/LOCATION ISSUE.");
       this.errorHandler({ message: "GPS/Location issue." });
     } else {
-      // const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${
-      //   this.state.searchText
-      // }&latitude=${latitude}&longitude=${longitude}&limit=${YELP_RESULT_LIMIT}`;
-      const yelpQueryString = `${
-        YELP_URI.API_YELP_SEARCH
-      }term=${"music"}&location=${encodeURI(
+      const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${
         this.state.searchText
-      )}&limit=${YELP_RESULT_LIMIT}`;
+      }&latitude=${latitude}&longitude=${longitude}&limit=${YELP_RESULT_LIMIT}`;
+      /*
+      Example to search for "music" as a Yelp term, presenting the user with a location to fill in. If you use location, you should do away with the lat/long and GPS calls, above.
+      */
+
+      // const yelpQueryString = `${YELP_URI.API_YELP_SEARCH}term=${"music"}&location=${encodeURI(this.state.searchText)}&limit=${YELP_RESULT_LIMIT}`;
 
       switch (this.state.selectedYelpDataPullMethod) {
         case "raw-axios":
           // Fetch Yelp data via a raw Axios call
           console.warn("     In raw-axios");
-          /*
-          yelp_client
-            .search({term: this.state.searchText, latitude: this.state.latitude, longitude: this.state.longitude, limit: 25})
-            .then(response => {
-              console.log(response.jsonBody.businesses[0].name);
-            })
-            .catch(e => {
-              console.log(e);
-            });
-            */
 
-          /*
-          yelp
-            .searchBusiness({term: this.state.searchText, latitude: this.state.latitude, longitude: this.state.longitude, limit: 25})
-            .then((results) => console.log(results))
-            .catch(e => {
-              console.log(e);
-            });
-          */
-          // console.log(`YELP KEY: ${YELP_API_key}`);
+          // This will throw an error in the browser console log, and "just not work" on
+          // the rendered side of the client:
           axios
             .get(`${yelpQueryString}`)
             .then(response => {
@@ -117,39 +105,18 @@ class SearchBar extends Component {
               this.errorHandler(error, true);
               console.warn(`     ERROR: ${JSON.stringify(error)}`);
             });
-
-          /*
-          Under Axios, I received this error:
-            Failed to load https://api.yelp.com/v3/businesses/search?term=pizza&latitude=33.389757599999996&longitude=-111.9343636&limit=25: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:3000' is therefore not allowed access. The response had HTTP status code 403.
-
-          See
-            https://stackoverflow.com/questions/44444777/react-isomorphic-fetch-no-access-control-allow-origin-header-with-yelp-fusion
-          or
-            https://stackoverflow.com/questions/45424182/cant-seem-to-fetch-data-from-the-yelp-api-in-react-app
-            */
           break;
-        case "corsanywhere":
-          // Fetch Yelp data via CORS anywhere See
-          // https://stackoverflow.com/questions/43871637/no-access-control-allow-origin-h
-          // e ader-is-present-on-the-requested-resource-whe
-          console.log("     In CORS anywhere.");
-          let myHeaders = new Headers();
-          myHeaders.append("Authorization", "Bearer " + YELP_API_key);
-          myHeaders.append("Origin", "Chris");
 
-          // fetch("https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses
-          // /search?ca" +     "tegories=bars&limit=50&location=New York", {headers:
-          // myHeaders}).then((res) => {   return res.json(); }).then((json) => {
-          // console.log(json); }); fetch(`${CORS_ANYWHERE_URL}${yelpQueryString}`,
-          // {headers: myHeaders}).then((response) => {   console.log(`RESPONSE:
-          // ${JSON.stringify(response.json)}`);   return response.json(); }).then((json)
-          // => {   console.log(json); }).catch(error => {   this.errorHandler(error,
-          // true); });
+        case "corsanywhere":
+          // Fetch Yelp data via CORS-Anywhere
+          console.log("     In CORS-Anywhere.");
 
           this.errorHandler({
             message: `Using CORS-Anywhere URL of ${CORS_ANYWHERE_URL}`
           });
 
+          // We're passing the yelpQueryString as an argument to our CORS_ANYWHERE_URL,
+          // thus using CORS-Anywhere as a proxy.
           axios
             .get(`${CORS_ANYWHERE_URL}${yelpQueryString}`)
             .then(response => {
@@ -161,8 +128,8 @@ class SearchBar extends Component {
               this.errorHandler(error, true);
               console.warn(`     ERROR: ${JSON.stringify(error)}`);
             });
-
           break;
+
         default:
           console.log("  In default case.");
           this.setState({ yelpResults: null });
@@ -179,10 +146,15 @@ class SearchBar extends Component {
 
   handleSubmit = event => {
     event.preventDefault();
+
+    // Clear our Yelp Results:
     this.setState({ yelpResults: null });
+
+    // Drop flags from previous attempts:
     this.setState({ isLoading: true });
-    // Clear any errors we may have had from a previous attempt:
     this.setState({ isError: false });
+
+    // Get our GPS coords:
     navigator.geolocation.getCurrentPosition(
       position => {
         this.setState({
@@ -195,18 +167,19 @@ class SearchBar extends Component {
           )}, ${JSON.stringify(this.state.longitude)}`
         );
         console.log(`STATE: ${JSON.stringify(this.state)}`);
-        //this.errorHandler({message: "Hi!"});
         this.getYelpData(this.state.latitude, this.state.longitude);
       },
       error => {
-        this.errorHandler({ message: `${error.message}` });
+        this.errorHandler({ message: `${error.message} Using defaults.` });
+        // Give this a default value for lat/long and search using these values. This is
+        // test code, remember.
         this.setState({ latitude: 33.5547386, longitude: -111.8880115 });
         this.getYelpData(this.state.latitude, this.state.longitude);
       },
       {
         enableHighAccuracy: true,
         timeout: 5000,
-        maximumAge: 1000
+        maximumAge: 10000
       }
     );
   };
@@ -236,7 +209,7 @@ class SearchBar extends Component {
                   autoFocus
                   name="searchText"
                   onChange={this.handleSearchTextChange}
-                  placeholder="Search Yelp for music in..."
+                  placeholder="Search Yelp near you for..."
                   value={this.state.searchText}
                 />
                 <input
